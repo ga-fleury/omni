@@ -1,16 +1,19 @@
 <script>
     import { createEventDispatcher } from 'svelte';
-    export let day;
     export let title;
+    export let date;
 
-    const dispatch2 = createEventDispatcher();
+    let day = Number(String(date).slice(-2))
+
+    const dispatch = createEventDispatcher();
 
   
     function squareClick() {
         console.log('component says clicked ' + day)
-      dispatch2('customEvent', 
+      dispatch('customEvent', 
         { title: title, 
-          day: day 
+          day: day,
+          date: date 
         });
     }
 </script>

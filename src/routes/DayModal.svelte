@@ -1,6 +1,8 @@
 <script>
     export let selectedDate;
-    export let title;
+    export let selectedDateTitle;
+    export let date;
+
     import { createEventDispatcher } from 'svelte';
     import { onMount } from 'svelte';
 
@@ -12,8 +14,9 @@
   
     function closeModal() {
       dispatch('close', 
-        { title: title, 
-          day: selectedDate 
+        { selectedDateTitle: selectedDateTitle, 
+          day: selectedDate,
+          date: date
         });
     }
 
@@ -66,7 +69,7 @@
   
   <div class="modal-backdrop" on:click={closeModal} role="button" aria-pressed="false" tabindex="0">
     <div class="modal-content" on:click|stopPropagation role="button" aria-pressed="false" tabindex="0">
-      <input type="text" name="" id="day-title-input" placeholder={title} bind:value={title} on:input={handleInputChange}>
+      <input type="text" name="" id="day-title-input" bind:value={selectedDateTitle.title} on:input={handleInputChange}>
       <p>{selectedDate.toDateString()}</p>
       <button on:click={closeModal} role="button" aria-pressed="false" tabindex="0">Close</button>
     </div>

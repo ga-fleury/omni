@@ -1,11 +1,10 @@
 <script>
 	import DayModal from './DayModal.svelte';
 	import DaySquare from './DaySquare.svelte';
-	// Get current date information
-	const date = new Date();
-	const currentYear = date.getFullYear();
-	const currentMonth = date.getMonth();
+	import { onMount, onDestroy } from 'svelte';
 
+	let journalMap = {};
+	let journalEntries = [];
 	const monthNames = [
 		'January',
 		'February',
@@ -21,77 +20,93 @@
 		'December'
 	];
 
+	// Determine the current year and month
+	const currentDate = new Date();
+	const currentYear = currentDate.getFullYear();
+	const currentMonth = currentDate.getMonth(); // Note: January is 0!
 
-	// Calculate the number of days in the current month
+	// Determine the number of days in the current month
 	const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-  const daysInNextMonth = new Date(currentYear, currentMonth + 2, 0).getDate();
-
-  let currentMonthTitles = []
-
-	// Create an array of day numbers
-	const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-  	const daysNextMonth = Array.from({ length: daysInNextMonth }, (_, i) => i + 1);
-
-	for(const day in days) {
-		currentMonthTitles.push("Title " + day)
-	}
 
 	let selectedDate = null;
-	let title;
+	let selectedDateTitle;
 
-	function openModal(day) {
+	function openModal(day, date) {
 		// Set the selected day
-		console.log('parent says clicked ' + day)
+		console.log('parent says clicked ' + date);
 		selectedDate = new Date(currentYear, currentMonth, day);
-		title = currentMonthTitles[day]
+		selectedDateTitle = journalMap[date];
 		document.body.style.overflow = 'hidden';
 	}
 
 	function handleSquareClick(event) {
-		console.log('parent says clicked ' + event.detail.day)
-		openModal(event.detail.day)
+		console.log('parent says clicked ' + event.detail.date);
+		openModal(event.detail.day, event.detail.date);
 	}
 
 	function closeModal(event) {
+		console.log(event);
+		const ISODate = event.detail.day.toISOString().split('T')[0];
 		// updates the modal externally, with info from inside the modal
-		const day = event.detail.day.getDate()
-		const newTitle = event.detail.title
-		currentMonthTitles[day] = newTitle
+		const newTitle = event.detail.selectedDateTitle.title;
+		journalMap[ISODate].title = newTitle;
+		journalEntries = Object.entries(journalMap);
+		saveToLocal(JSON.stringify(journalMap));
 		selectedDate = null;
 		document.body.style.overflow = 'auto';
 	}
 
+	onMount(() => {
+		const storedData = localStorage.getItem('OMNI_DATA');
+		if (storedData) {
+			journalMap = JSON.parse(storedData);
+			journalEntries = Object.entries(journalMap);
+			console.log('User data loaded from localStorage:', journalMap);
+		} else {
+			// Initialize an empty object
+			
+
+			// Populate the object with each day of the month as an ISO string
+			for (let day = 1; day <= daysInMonth; day++) {
+				// Construct the date in ISO format (YYYY-MM-DD)
+				const dateKey = new Date(currentYear, currentMonth, day).toISOString().split('T')[0];
+
+				// Assign an object to each date, here with a placeholder title
+				journalMap[dateKey] = {
+					title: `Entry for ${dateKey}`
+				};
+			}
+
+			journalEntries = Object.entries(journalMap);
+			console.log(journalEntries);
+		}
+	});
+
+	function saveToLocal(item) {
+		localStorage.setItem('OMNI_DATA', item);
+	}
 </script>
 
-
 <div class="year">
-	
-  <h2 class="month">{monthNames[currentMonth]}</h2>
-  <div class="calendar">
-    {#each days as day}
-		<DaySquare {day} title={currentMonthTitles[day]} on:customEvent={handleSquareClick}/>
-    {/each}
-	{#if selectedDate}
-		<DayModal {selectedDate} {title} on:close={closeModal} />
-  	{/if}
-  </div>
-  <h2 class="month">{monthNames[currentMonth+1]}</h2>
-  <div class="calendar">
-    {#each daysNextMonth as day}
-		<DaySquare {day} title={daysInNextMonth[day]} on:customEvent={handleSquareClick}/>
-    {/each}
-  </div>
+	<h2 class="month">{monthNames[currentMonth]}</h2>
+	<div class="calendar">
+		{#each journalEntries as [date, details]}
+			<DaySquare {date} title={details.title} on:customEvent={handleSquareClick} />
+		{/each}
+		{#if selectedDate}
+			<DayModal {selectedDate} {selectedDateTitle} on:close={closeModal} />
+		{/if}
+	</div>
 </div>
 
-
 <style lang="scss">
-  .year {
-    max-width: 80vw;
-    align-self: center;
-    margin:auto;
-  }
+	.year {
+		max-width: 80vw;
+		align-self: center;
+		margin: auto;
+	}
 	.month {
-    font-size: 2vw;
+		font-size: 2vw;
 		margin-top: 0;
 	}
 	.calendar {
