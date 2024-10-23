@@ -6,20 +6,6 @@
 	let journalMap = {};
 	let journalEntries = [];
 	let squareSize = String(150 + 'px');
-	const monthNames = [
-		'January',
-		'February',
-		'March',
-		'April',
-		'May',
-		'June',
-		'July',
-		'August',
-		'September',
-		'October',
-		'November',
-		'December'
-	];
 
 	// Determine the current year and month
 	const currentDate = new Date();

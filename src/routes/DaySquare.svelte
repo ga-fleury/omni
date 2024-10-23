@@ -19,7 +19,7 @@
 
 	function squareClick() {
 		console.log('component says clicked ' + day);
-		dispatch('squareClicked', { title: title, day: day, date: date });
+		dispatch('squareClicked', { title, day, date });
 	}
 </script>
 
@@ -80,7 +80,7 @@
 			background-color: #f4f4f4;
 		}
 		&__date {
-			color: rgba(0, 0, 0, .3);
+			color: #C2C3C7;
 			font-weight: 700;
 			position: absolute;
 			right: 4px;
@@ -89,17 +89,22 @@
 		&__title {
 			margin: 0px 15px;
 			grid-area: title;
-      text-align: center;
+			text-align: center;
+			font-weight: 600;
+			color: black;
 		}
 	}
 
-  @for $i from 1 through 10 {
+  @for $i from 1 through 20 {
   .icon#{$i} {
-    width: 16px;  // Example width
-    height: 16px; // Example height
+    width: 16px; 
+    height: 16px; 
     grid-area: icon#{$i};
-    align-self: center;
-    justify-self: center;
+	@if $i <= 10 {
+	  align-self: start;
+	  margin: 4px;
+	  justify-self: right;
+    }
   }
 }
 </style>
