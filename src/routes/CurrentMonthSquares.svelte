@@ -1,10 +1,11 @@
 <script>
 	import DayModal from './DayModal.svelte';
 	import DaySquare from './DaySquare.svelte';
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount } from 'svelte';
 
 	let journalMap = {};
 	let journalEntries = [];
+	let squareSize = String(150 + 'px');
 	const monthNames = [
 		'January',
 		'February',
@@ -29,26 +30,36 @@
 	const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
 
 	let selectedDate = null;
-	let selectedDateTitle;
+	let selectedDateInfo;
 
+	/**
+	 * Triggered inside DaySquare, opens up the corresponding DayModal with the information from that square
+	 * @param {any} day
+	 * @param {any} date
+	 * @returns {any}
+	 */
 	function openModal(day, date) {
 		// Set the selected day
-		console.log('parent says clicked ' + date);
 		selectedDate = new Date(currentYear, currentMonth, day);
-		selectedDateTitle = journalMap[date];
+		selectedDateInfo = journalMap[date];
 		document.body.style.overflow = 'hidden';
 	}
 
+	/**
+	 * Triggered by child square when it's clicked
+	 * @param {Object<string, *>} event - contains information passed by the child component
+	 */
 	function handleSquareClick(event) {
-		console.log('parent says clicked ' + event.detail.date);
 		openModal(event.detail.day, event.detail.date);
 	}
 
+	/**
+	 * Triggered by the modal when it is closed, updates changes made to
+	 * @param {Object<string, *>} event - contains information passed by the child component
+	 */
 	function closeModal(event) {
-		console.log(event);
 		const ISODate = event.detail.day.toISOString().split('T')[0];
-		// updates the modal externally, with info from inside the modal
-		const newTitle = event.detail.selectedDateTitle.title;
+		const newTitle = event.detail.selectedDateInfo.title;
 		journalMap[ISODate].title = newTitle;
 		journalEntries = Object.entries(journalMap);
 		saveToLocal(JSON.stringify(journalMap));
@@ -61,49 +72,79 @@
 		if (storedData) {
 			journalMap = JSON.parse(storedData);
 			journalEntries = Object.entries(journalMap);
-			console.log('User data loaded from localStorage:', journalMap);
+			console.log('%cUser data loaded from localStorage', 'color: white; background-color: blue');
 		} else {
-			// Initialize an empty object
-			
-
-			// Populate the object with each day of the month as an ISO string
-			for (let day = 1; day <= daysInMonth; day++) {
-				// Construct the date in ISO format (YYYY-MM-DD)
-				const dateKey = new Date(currentYear, currentMonth, day).toISOString().split('T')[0];
-
-				// Assign an object to each date, here with a placeholder title
-				journalMap[dateKey] = {
-					title: `Entry for ${dateKey}`
-				};
-			}
-
-			journalEntries = Object.entries(journalMap);
-			console.log(journalEntries);
+			console.log('No data loaded from localStorage');
+			emptyMonthEntries();
 		}
 	});
 
-	function saveToLocal(item) {
+	/**
+	 * Prepopulates a month with empty entries
+	 * @returns {any}
+	 */
+	 function emptyMonthEntries() {
+		for (let day = 1; day <= daysInMonth; day++) {
+			// Construct the date in ISO format (YYYY-MM-DD)
+			const dateKey = new Date(currentYear, currentMonth, day).toISOString().split('T')[0];
+
+			// Assign an object to each date, here with a placeholder title
+			journalMap[dateKey] = {
+				// title: `Entry for ${dateKey}`,
+				title: '',
+				wake_up_time: '',
+				sleep_time: '',
+				meditated: {
+					boolean: false,
+					icon: {
+						enabled: true,
+						name: 'star',
+						position: 'icon5',
+						color: 'black'
+					}
+				},
+				exercised: {
+					boolean: false,
+					icon: {
+						enabled: false,
+						name: '',
+						position: '',
+						color: ''
+					}
+				}
+			};
+		}
+		journalEntries = Object.entries(journalMap);
+		saveToLocal(JSON.stringify(journalMap));
+	};
+
+	/**
+	 * Saves to localStorage
+	 * @param {any} item
+	 * @returns {any}
+	 */
+	const saveToLocal = (item) => {
 		localStorage.setItem('OMNI_DATA', item);
-	}
+	};
 </script>
 
 <div class="year">
-	<h2 class="month">{monthNames[currentMonth]}</h2>
 	<div class="calendar">
 		{#each journalEntries as [date, details]}
-			<DaySquare {date} title={details.title} on:customEvent={handleSquareClick} />
+			<DaySquare {date} title={details.title} {squareSize} {details} on:squareClicked={handleSquareClick} />
 		{/each}
 		{#if selectedDate}
-			<DayModal {selectedDate} {selectedDateTitle} on:close={closeModal} />
+			<DayModal {selectedDate} {selectedDateInfo} on:close={closeModal} />
 		{/if}
 	</div>
 </div>
 
 <style lang="scss">
 	.year {
-		max-width: 80vw;
+		max-width: 90vw;
 		align-self: center;
-		margin: auto;
+		margin: 20px auto;
+		width: 100%;
 	}
 	.month {
 		font-size: 2vw;
@@ -111,7 +152,7 @@
 	}
 	.calendar {
 		display: grid;
-		grid-template-columns: repeat(7, 1fr);
+		grid-template-columns: repeat(auto-fill, 150px);
 		gap: 30px;
 		margin-bottom: 10vh;
 	}
