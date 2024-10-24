@@ -1,0 +1,10 @@
+<script>
+	export let color;
+</script>
+
+<svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" width="15" height="15"
+	><path
+		d="M13 0H2v14.5a.5.5 0 00.812.39L7.5 11.14l4.688 3.75A.5.5 0 0013 14.5V0z"
+		fill={color}
+	></path></svg
+>
