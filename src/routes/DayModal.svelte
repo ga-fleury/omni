@@ -4,8 +4,18 @@
 	export let date;
 
 	import { createEventDispatcher } from 'svelte';
-	import { onMount } from 'svelte';
 	import { findKeysWithBoolean } from '../utils/utils';
+	import dayjs from 'dayjs';
+	import LocalizedFormat from 'dayjs/plugin/localizedFormat';
+	import 'dayjs/locale/en';
+
+	// Extend Day.js with the localized format plugin
+	dayjs.extend(LocalizedFormat);
+
+	// Optionally, set the locale globally if you want dayjs behavior throughout your app
+	dayjs.locale(navigator.language || 'en'); // Automatically use the user's browser locale setting
+
+	// TODO - multiline titles don't show up completely when opening up the modal
 
 	function handleInputChange() {
 		const textarea = document.querySelector('#day-title-input');
@@ -18,22 +28,56 @@
 		dispatch('close', { selectedDateInfo, day: selectedDate, date });
 	}
 
-	function handleEscapeKey(event) {
+	function moveCursorToEnd(editableElement, maxChars) {
+		editableElement.textContent = String(editableElement.textContent.slice(0, maxChars));
+
+		// Create a new Range object
+		const range = document.createRange();
+
+		// Select all child nodes of the editable div
+		const sel = window.getSelection();
+
+		// Set the range to the end of the content
+		const childNodes = editableElement.childNodes;
+		if (childNodes.length > 0) {
+			// Ensure there are text nodes to place the cursor at
+			const lastNode = childNodes[childNodes.length - 1];
+			const lastNodeLength =
+				lastNode.nodeType === Node.TEXT_NODE ? lastNode.length : lastNode.childNodes.length;
+			range.setStart(lastNode, lastNodeLength);
+			range.collapse(true);
+		} else {
+			// If there are no child nodes, set the range to 0
+			range.setStart(editableElement, 0);
+			range.collapse(true);
+		}
+
+		// Remove any existing selections (if any)
+		sel.removeAllRanges();
+
+		// Add our newly created range
+		sel.addRange(range);
+	}
+
+	function handleKeyDown(event) {
+		const textarea = document.querySelector('#day-title-input');
 		if (event.key === 'Escape' || event.key === 'Esc') {
 			// Call the function you want to trigger
 			dispatch('close', { selectedDateInfo, day: selectedDate, date });
 			// Add any other logic you want here
 		}
-
+		if (textarea.textContent.length > 70) {
+			moveCursorToEnd(textarea, 70)
+		}
 	}
 
-	console.log(selectedDateInfo);
+	// console.log('dayModal', selectedDate);
 
 	const booleanKeys = findKeysWithBoolean(selectedDateInfo);
 
 	const dispatch = createEventDispatcher();
 
-	console.log(JSON.stringify(selectedDateInfo));
+	// console.log(JSON.stringify(selectedDateInfo));
 </script>
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -42,7 +86,7 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div class="modal-backdrop" on:click={closeModal}>
 	<div class="modal-content" on:click|stopPropagation>
-		<p class="modal-date">{selectedDate.toDateString()}</p>
+		<p class="modal-date">{dayjs(selectedDate).format('dddd, MMMM D, YYYY')}</p>
 		<div class="row">
 			<span
 				type="text"
@@ -51,7 +95,7 @@
 				id="day-title-input"
 				placeholder="your day's highlight"
 				on:input={handleInputChange}
-				on:keydown={handleEscapeKey}
+				on:keydown={handleKeyDown}
 				contenteditable
 			>
 				{selectedDateInfo.title}

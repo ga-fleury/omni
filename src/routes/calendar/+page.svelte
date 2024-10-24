@@ -16,10 +16,21 @@
       font-size: 2vw;
       margin-top: 0;
     }
+
+    .filter {
+      &-wrap {
+        position: sticky;
+        top: 50px;
+      }
+    }
 </style>
   
 <div class="calendar-full">
-  <div><h2 class="month">Filters</h2></div>
+  <div class="month">
+    <div class="filter-wrap">
+      <span>Filters</span>
+    </div>
+  </div>
     <div class="view">
       <CurrentMonthSquares />
     </div>
