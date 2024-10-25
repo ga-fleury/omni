@@ -156,7 +156,7 @@
 					boolean: false,
 					icon: {
 						enabled: true,
-						name: 'star',
+						name: 'spa',
 						position: 'icon5',
 						color: 'black'
 					}
@@ -164,10 +164,10 @@
 				exercised: {
 					boolean: false,
 					icon: {
-						enabled: false,
-						name: '',
-						position: '',
-						color: ''
+						enabled: true,
+						name: 'fitness_center',
+						position: 'icon4',
+						color: 'black'
 					}
 				}
 			};
@@ -192,7 +192,7 @@
 
 <div class="year">
 	<div class="calendar">
-		<button class="day-button more" on:click={handleMorePastSquares}>+</button>
+		<button class="day-button more" style="--size: {squareSize};" on:click={handleMorePastSquares}>+</button>
 		{#each journalEntries as [date, details]}
 			<DaySquare
 				{date}
@@ -200,11 +200,11 @@
 				{squareSize}
 				{details}
 				on:squareClicked={handleSquareClick}
-				monthShow={Number(String(date).slice(-2)) == Number('01') ? true : false}
+				monthShow={Number(String(date).slice(-2)) == Number('01') || date == Object.keys(journalMap)[0] ? true : false}
 			/>
 		{/each}
 		<!-- add more days -->
-		<button class="day-button more" on:click={handleMoreFutureSquares}>+</button>
+		<button class="day-button more" style="--size: {squareSize};" on:click={handleMoreFutureSquares}>+</button>
 		{#if selectedDate}
 			<DayModal {selectedDate} {selectedDateInfo} on:close={closeModal} />
 		{/if}
@@ -233,9 +233,18 @@
 	}
 
 	.day-button.more {
+		max-width: calc(var(--size) + 4px);
+		max-height: calc(var(--size) + 4px);
+		background-color: white;
 		font-size: 5vw;
 		color: #c2c3c7;
 		cursor: pointer;
-		height: 150px;
+		height: 200px;
+		width: 200px;
+		border: 2px solid #c2c3c7;
+		transition: background-color 0.3s;
+		&:hover {
+			background-color: rgba(0,0,0,.05);
+		}
 	}
 </style>

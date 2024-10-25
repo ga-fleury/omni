@@ -43,11 +43,10 @@
 <div class="day-button" on:click={() => squareClick()} style="--size: {squareSize};">
 	{#each booleanKeys as key}
 		{#if details[key].icon.enabled && details[key].boolean}
-			<div
-				class={details[key].icon.position}
-				style="--icon-grid-area: {details[key].icon.position};"
-			>
-				<StarIcon color={details[key].icon.color} />
+			<div class={details[key].icon.position}>
+				<span class="material-symbols-outlined">
+					{details[key].icon.name}
+				</span>
 			</div>
 		{/if}
 	{/each}
@@ -59,8 +58,8 @@
 			<span class="day-button__month">{monthNames[Number(date.slice(5, 7)) - 1].toUpperCase()}</span
 			>
 		</div>
-		{/if}
-		<span class="day-button__date">{date.slice(-2)}</span>
+	{/if}
+	<span class="day-button__date">{date.slice(-2)}</span>
 </div>
 
 <style lang="scss">
@@ -138,14 +137,23 @@
 
 	@for $i from 1 through 20 {
 		.icon#{$i} {
-			width: 16px;
-			height: 16px;
+			font-size: 12px;
 			grid-area: icon#{$i};
+			font-family: 'MaterialSymbolsOutlined-VariableFont_FILL';
 			@if $i <= 10 {
-				align-self: start;
+				align-self: center;
 				margin: 4px;
-				justify-self: right;
+				justify-self: center;
 			}
 		}
+	}
+
+	.material-symbols-outlined {
+		font-variation-settings:
+			'FILL' 0,
+			'wght' 500,
+			'GRAD' 200,
+			'opsz' 24;
+		font-size: 20px;
 	}
 </style>
