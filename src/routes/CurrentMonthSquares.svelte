@@ -31,9 +31,7 @@
 	 * @returns {any}
 	 */
 	function openModal(day, date) {
-		// console.log('open modal', day, date)
 		// Set the selected day
-		// console.log('openmodal jorunalmap', journalMap[date])
 		selectedDate = date;
 		selectedDateInfo = journalMap[date];
 		document.body.style.overflow = 'hidden';
@@ -49,56 +47,35 @@
 
 	function handleMoreFutureSquares() {
 		const lastDate = Object.keys(journalMap)[Object.keys(journalMap).length - 1];
-		addFutureSquares(lastDate, 2);
+		addSquares(lastDate, 2, true);
 	}
 
 	function handleMorePastSquares() {
 		const firstDate = Object.keys(journalMap)[0];
-		// console.log(firstDate)
-		addPastSquares(firstDate, 2)
+		addSquares(firstDate, 2, false);
 	}
 
-	function addPastSquares(endDateISO, numberOfDays) {
-		let endDate = dayjs(endDateISO).subtract(1, 'day');
-		// console.log(endDate.$d);
-		const startDate = endDate.subtract(numberOfDays, 'day');
-		// console.log(startDate.$d);
-		let pastDates = [];
-		while (endDate.$d >= startDate.$d) {
-			pastDates.push(new Date(endDate)); // Use new Date to create a copy
-			endDate = endDate.subtract(1, 'day');
+	function addSquares(referenceDateISO, numberOfDays, isFuture) {
+		let referenceDate = dayjs(referenceDateISO);
+		referenceDate = isFuture ? referenceDate.add(1, 'day') : referenceDate.subtract(1, 'day');
+		const limitDate = isFuture
+			? referenceDate.add(numberOfDays, 'day')
+			: referenceDate.subtract(numberOfDays, 'day');
 
-			if (pastDates.length > numberOfDays + 1) {
-				// console.log('%cinfinite loop, breaking', 'color: white; background-color: red');
-				// console.log(pastDates);
-				// console.log(startDate);
+		let dates = [];
+
+		while (isFuture ? referenceDate.$d <= limitDate.$d : referenceDate.$d >= limitDate.$d) {
+			dates.push(new Date(referenceDate)); // Use new Date to create a copy
+			referenceDate = isFuture ? referenceDate.add(1, 'day') : referenceDate.subtract(1, 'day');
+
+			if (dates.length > numberOfDays + 1) {
 				break;
 			}
 		}
-		addDaysToSquares(pastDates)
-		// console.log(pastDates);
+
+		addDaysToSquares(dates);
 	}
 
-	function addFutureSquares(startingDateISO, numberOfDays) {
-		let startDate = dayjs(startingDateISO).add(1, 'day');
-		// console.log(startDate.$d);
-		const endDate = startDate.add(numberOfDays, 'day');
-		// console.log(endDate.$d);
-		let futureDates = [];
-		while (startDate.$d <= endDate.$d) {
-			futureDates.push(new Date(startDate)); // Use new Date to create a copy
-			startDate = startDate.add(1, 'day');
-
-			if (futureDates.length > numberOfDays + 1) {
-				// console.log('%cinfinite loop, breaking', 'color: white; background-color: red');
-				// console.log(futureDates);
-				// console.log(startDate);
-				break;
-			}
-		}
-		addDaysToSquares(futureDates)
-		// console.log(futureDates);
-	}
 
 	/**
 	 * Triggered by the modal when it is closed, updates changes made to
@@ -106,11 +83,8 @@
 	 */
 	function closeModal(event) {
 		const ISODate = event.detail.day;
-		const newTitle = event.detail.selectedDateInfo.title;
-		// console.log(ISODate)
-		// console.log(newTitle)
-		// console.log(journalMap)
-		journalMap[ISODate].title = newTitle;
+		const newInfo = event.detail.selectedDateInfo;
+		journalMap[ISODate] = newInfo;
 		journalEntries = Object.entries(journalMap);
 		saveToLocal(JSON.stringify(journalMap));
 		selectedDate = null;
@@ -122,7 +96,6 @@
 		if (storedData) {
 			journalMap = JSON.parse(storedData);
 			journalEntries = Object.entries(journalMap);
-			// console.log('%cUser data loaded from localStorage', 'color: white; background-color: blue');
 		} else {
 			let dates = [];
 			let startingDate = new Date(startDate);
@@ -130,25 +103,23 @@
 			while (startingDate <= endDate) {
 				dates.push(new Date(startingDate)); // Use new Date to create a copy
 				startingDate.setDate(startingDate.getDate() + 1);
-				// console.log(startingDate);
 			}
-			// console.log('No data loaded from localStorage');
 			addDaysToSquares(dates);
+
+			console.log('%cfinished adding', 'color: white; background-color: green');
 		}
 	});
 
 	/**
 	 * Prepopulates a month with empty entries
-	 * @param {Array} dates 
+	 * @param {Array} dates
 	 * @returns {any}
 	 */
 	function addDaysToSquares(dates) {
 		dates.forEach((date) => {
 			let dateKey = date.toISOString().split('T')[0];
 
-			// Assign an object to each date, here with a placeholder title
 			journalMap[dateKey] = {
-				// title: `Entry for ${dateKey}`,
 				title: '',
 				wake_up_time: '',
 				sleep_time: '',
@@ -156,7 +127,7 @@
 					boolean: false,
 					icon: {
 						enabled: true,
-						name: 'spa',
+						name: 'self_improvement',
 						position: 'icon5',
 						color: 'black'
 					}
@@ -172,11 +143,9 @@
 				}
 			};
 		});
-		journalEntries = Object.entries(journalMap);
-		journalEntries.sort((a, b) => new Date(a[0]) - new Date(b[0]));
-		journalMap = Object.fromEntries(journalEntries)
-		// console.log('journal entries', journalEntries)
-		// console.log('journal map', journalMap)
+		journalEntries = Object.entries(journalMap).sort((a, b) => new Date(a[0]) - new Date(b[0]));
+		journalMap = Object.fromEntries(journalEntries);
+		console.log('journal map', journalMap);
 		saveToLocal(JSON.stringify(journalMap));
 	}
 
@@ -192,7 +161,9 @@
 
 <div class="year">
 	<div class="calendar">
-		<button class="day-button more" style="--size: {squareSize};" on:click={handleMorePastSquares}>+</button>
+		<button class="day-button more" style="--size: {squareSize};" on:click={handleMorePastSquares}
+			>+</button
+		>
 		{#each journalEntries as [date, details]}
 			<DaySquare
 				{date}
@@ -200,11 +171,16 @@
 				{squareSize}
 				{details}
 				on:squareClicked={handleSquareClick}
-				monthShow={Number(String(date).slice(-2)) == Number('01') || date == Object.keys(journalMap)[0] ? true : false}
+				monthShow={Number(String(date).slice(-2)) == Number('01') ||
+				date == Object.keys(journalMap)[0]
+					? true
+					: false}
 			/>
 		{/each}
 		<!-- add more days -->
-		<button class="day-button more" style="--size: {squareSize};" on:click={handleMoreFutureSquares}>+</button>
+		<button class="day-button more" style="--size: {squareSize};" on:click={handleMoreFutureSquares}
+			>+</button
+		>
 		{#if selectedDate}
 			<DayModal {selectedDate} {selectedDateInfo} on:close={closeModal} />
 		{/if}
@@ -244,7 +220,7 @@
 		border: 2px solid #c2c3c7;
 		transition: background-color 0.3s;
 		&:hover {
-			background-color: rgba(0,0,0,.05);
+			background-color: rgba(0, 0, 0, 0.05);
 		}
 	}
 </style>
