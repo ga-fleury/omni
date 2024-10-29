@@ -76,7 +76,6 @@
 		addDaysToSquares(dates);
 	}
 
-
 	/**
 	 * Triggered by the modal when it is closed, updates changes made to
 	 * @param {Object<string, *>} event - contains information passed by the child component
@@ -121,26 +120,40 @@
 
 			journalMap[dateKey] = {
 				title: '',
-				wake_up_time: '',
-				sleep_time: '',
-				meditated: {
-					boolean: false,
-					icon: {
-						enabled: true,
-						name: 'self_improvement',
-						position: 'icon5',
-						color: 'black'
+				properties: [
+					 {
+						id: 'wake_up_time',
+						type: 'text',
+						value: ''
+					},
+					 {
+						id: 'sleep_time',
+						type: 'text',
+						value: ''
+					},
+					{
+						id: 'meditated',
+						type: 'check',
+						boolean: false,
+						icon: {
+							enabled: true,
+							name: 'self_improvement',
+							position: 'icon5',
+							color: 'black'
+						}
+					},
+					{
+						id: 'exercised',
+						type: 'check',
+						boolean: false,
+						icon: {
+							enabled: true,
+							name: 'fitness_center',
+							position: 'icon4',
+							color: 'black'
+						}
 					}
-				},
-				exercised: {
-					boolean: false,
-					icon: {
-						enabled: true,
-						name: 'fitness_center',
-						position: 'icon4',
-						color: 'black'
-					}
-				}
+				]
 			};
 		});
 		journalEntries = Object.entries(journalMap).sort((a, b) => new Date(a[0]) - new Date(b[0]));
@@ -157,6 +170,30 @@
 	const saveToLocal = (item) => {
 		localStorage.setItem('OMNI_DATA', item);
 	};
+
+	function massPropertyUpdate(event) {
+		const changedProperty = event.detail.changedProperty
+		const newValue = event.detail.newPropertyValue
+		const index = event.detail.objectIndex
+		for (const day in journalMap){
+			journalMap[day].properties[index].id = newValue
+		}
+		console.log('massprop')
+		journalEntries = Object.entries(journalMap).sort((a, b) => new Date(a[0]) - new Date(b[0]));
+		journalMap = Object.fromEntries(journalEntries);
+		saveToLocal(JSON.stringify(journalMap));
+	}
+
+	function massIconUpdate(event) {
+		const index = event.detail.iconIndex;
+		for (const day in journalMap){
+			journalMap[day].properties[index].icon.name = event.detail.newIconName
+		}
+		console.log('massIcon')
+		journalEntries = Object.entries(journalMap).sort((a, b) => new Date(a[0]) - new Date(b[0]));
+		journalMap = Object.fromEntries(journalEntries);
+		saveToLocal(JSON.stringify(journalMap));
+	}
 </script>
 
 <div class="year">
@@ -182,7 +219,13 @@
 			>+</button
 		>
 		{#if selectedDate}
-			<DayModal {selectedDate} {selectedDateInfo} on:close={closeModal} />
+			<DayModal 
+				{selectedDate} 
+				{selectedDateInfo} 
+				on:close={closeModal}
+				on:propertySchemaChange={massPropertyUpdate}
+				on:massIconChange={massIconUpdate}
+				/>
 		{/if}
 	</div>
 </div>

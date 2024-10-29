@@ -28,7 +28,7 @@
 
 	const dispatch = createEventDispatcher();
 
-	const booleanKeys = findKeysWithIcon(details);
+	const booleanKeys = findKeysWithIcon(details.properties);
 	// console.log(details);
 	// console.log(booleanKeys);
 
@@ -42,10 +42,10 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class="day-button" on:click={() => squareClick()} style="--size: {squareSize};">
 	{#each booleanKeys as key}
-		{#if details[key].icon.enabled && details[key].boolean}
-			<div class={details[key].icon.position}>
+		{#if details.properties[key].icon.enabled && details.properties[key].boolean}
+			<div class={details.properties[key].icon.position}>
 				<span class="material-symbols-outlined">
-					{details[key].icon.name}
+					{details.properties[key].icon.name}
 				</span>
 			</div>
 		{/if}

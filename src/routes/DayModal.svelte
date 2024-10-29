@@ -1,13 +1,22 @@
 <script>
 	export let selectedDate;
 	export let selectedDateInfo;
-	export let date;
+	let date;
+	let changedProperty;
+	let newPropertyValue;
+	let objectIndex;
+	let massPropertyUpdate = false;
+	let massIconUpdate = false;
+	let iconIndex;
+	let newIconName;
 
 	import { createEventDispatcher } from 'svelte';
-	import { findKeysWithBoolean } from '../utils/utils';
+	import { findKeysWithBoolean, findObjectIndexByValue } from '../utils/utils';
 	import dayjs from 'dayjs';
 	import LocalizedFormat from 'dayjs/plugin/localizedFormat';
 	import 'dayjs/locale/en';
+	import ModalItem from './components/ModalItem.svelte';
+	import AddPropertyContext from './components/AddPropertyContext.svelte';
 
 	// Extend Day.js with the localized format plugin
 	dayjs.extend(LocalizedFormat);
@@ -16,6 +25,10 @@
 	dayjs.locale(navigator.language || 'en'); // Automatically use the user's browser locale setting
 
 	// TODO - multiline titles don't show up completely when opening up the modal
+	// TODO - better layout for items, see obsidian/notion for reference
+	// TODO - modular item creation inside of the modal
+	// TODO - handle icon/property name changes using only one function
+	// TODO - handle multiple changes per modal close (currently only one) 
 
 	function handleInputChange() {
 		const textarea = document.querySelector('#day-title-input');
@@ -24,8 +37,16 @@
 		selectedDateInfo.title = textarea.textContent;
 	}
 
-	function closeModal() {
+	function closeModal(...args) {
 		dispatch('close', { selectedDateInfo, day: selectedDate, date });
+		if(massPropertyUpdate) {
+			dispatch('propertySchemaChange', { changedProperty, newPropertyValue, objectIndex });
+			massPropertyUpdate = false;
+		}
+		if(massIconUpdate) {
+			dispatch('massIconChange', { newIconName, iconIndex });
+			massIconUpdate = false;
+		}
 	}
 
 	function moveCursorToEnd(editableElement, maxChars) {
@@ -67,15 +88,35 @@
 			// Add any other logic you want here
 		}
 		if (textarea.textContent.length > 70) {
-			moveCursorToEnd(textarea, 70)
+			moveCursorToEnd(textarea, 70);
 		}
+	}
+
+	
+
+	function propertyChange(event) {
+		changedProperty = event.detail.changedProperty
+		newPropertyValue = event.detail.newPropertyValue
+		const index = findObjectIndexByValue(selectedDateInfo.properties, 'id', changedProperty)
+		objectIndex = index;
+		console.log('day modal', selectedDateInfo.properties[index].id)
+		massPropertyUpdate = true
+	}
+
+	function iconChange(event) {
+		const index = findObjectIndexByValue(selectedDateInfo.properties, 'id', event.detail.id)
+		iconIndex = index
+		newIconName = event.detail.iconName
+		massIconUpdate = true
+		console.log(iconIndex, newIconName)
 	}
 
 	// console.log('dayModal', selectedDate);
 
-	const booleanKeys = findKeysWithBoolean(selectedDateInfo);
+	const booleanKeys = findKeysWithBoolean(selectedDateInfo.properties);
 
 	const dispatch = createEventDispatcher();
+	const params = Object.keys(selectedDateInfo.properties);
 
 	// console.log(JSON.stringify(selectedDateInfo));
 </script>
@@ -101,12 +142,18 @@
 				{selectedDateInfo.title}
 			</span>
 		</div>
-		{#each booleanKeys as key}
-			<div class="row together">
-				<label for="">{key}</label>
-				<input type="checkbox" id="key" bind:checked={selectedDateInfo[key].boolean} />
-			</div>
-		{/each}
+		<div>
+			{#each params as param}
+				<ModalItem 
+					info={selectedDateInfo.properties[param]} 
+					on:propertyChange={propertyChange}
+					on:iconChange={iconChange}
+					{changedProperty}
+					{newPropertyValue}
+					/>
+			{/each}
+			<AddPropertyContext  />
+		</div>
 		<button on:click={closeModal}>Close</button>
 	</div>
 </div>
@@ -115,6 +162,7 @@
 	:root {
 		--title-margin: 20px;
 	}
+	
 	.day-title-input {
 		border: none;
 		border-bottom: 1px solid white;
