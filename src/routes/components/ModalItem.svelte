@@ -30,6 +30,16 @@
         console.log(newIcon)
         dispatch('iconChange', {id: info.id, iconName: newIcon}) 
     }
+
+    function parameterClick(event) {
+        if(event.srcElement.childNodes[0].attributes[0].nodeValue == "checkbox") {
+            console.log('check')
+            info.boolean = !event.srcElement.childNodes[0].checked
+        }
+        console.log('click')
+        console.log(event)
+    }
+
 </script>
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -58,7 +68,7 @@
 				contenteditable
 			>{info.id}</span>
 	</div>
-	<div>
+	<div class="param-right" on:click={parameterClick}>
         {#if info.boolean === true || info.boolean === false}
             
         <input type="checkbox" bind:checked={info.boolean} />
@@ -80,6 +90,13 @@
             align-items: center;
             min-width: 150px;
             gap: 6px;
+        }
+        &-right {
+            width: 100%;
+            &:hover {
+                background-color: #c2c3c7;
+                cursor: pointer;
+            }
         }
     }
 </style>
