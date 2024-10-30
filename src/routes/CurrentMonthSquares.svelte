@@ -88,6 +88,7 @@
 		saveToLocal(JSON.stringify(journalMap));
 		selectedDate = null;
 		document.body.style.overflow = 'auto';
+		console.log('closemodal', journalMap);
 	}
 
 	onMount(() => {
@@ -121,12 +122,12 @@
 			journalMap[dateKey] = {
 				title: '',
 				properties: [
-					 {
+					{
 						id: 'wake_up_time',
 						type: 'text',
 						value: ''
 					},
-					 {
+					{
 						id: 'sleep_time',
 						type: 'text',
 						value: ''
@@ -172,13 +173,13 @@
 	};
 
 	function massPropertyUpdate(event) {
-		const changedProperty = event.detail.changedProperty
-		const newValue = event.detail.newPropertyValue
-		const index = event.detail.objectIndex
-		for (const day in journalMap){
-			journalMap[day].properties[index].id = newValue
+		const changedProperty = event.detail.changedProperty;
+		const newValue = event.detail.newPropertyValue;
+		const index = event.detail.objectIndex;
+		for (const day in journalMap) {
+			journalMap[day].properties[index].id = newValue;
 		}
-		console.log('massprop')
+		console.log('massprop');
 		journalEntries = Object.entries(journalMap).sort((a, b) => new Date(a[0]) - new Date(b[0]));
 		journalMap = Object.fromEntries(journalEntries);
 		saveToLocal(JSON.stringify(journalMap));
@@ -186,11 +187,25 @@
 
 	function massIconUpdate(event) {
 		const index = event.detail.iconIndex;
-		for (const day in journalMap){
-			journalMap[day].properties[index].icon.name = event.detail.newIconName
+		for (const day in journalMap) {
+			journalMap[day].properties[index].icon.name = event.detail.newIconName;
 		}
-		console.log('massIcon')
+		console.log('massIcon');
 		journalEntries = Object.entries(journalMap).sort((a, b) => new Date(a[0]) - new Date(b[0]));
+		journalMap = Object.fromEntries(journalEntries);
+		saveToLocal(JSON.stringify(journalMap));
+	}
+
+	// FIXME - new properties get added to all squares but are not individually updated until app is refreshed
+
+	function massAddProperty(event) {
+		const newProperty = event.detail;
+		console.log(newProperty);
+		for (const day in journalMap) {
+			journalMap[day].properties.push(newProperty);
+		}
+		console.log('addProperty', journalMap);
+		journalEntries = Object.entries(journalMap);
 		journalMap = Object.fromEntries(journalEntries);
 		saveToLocal(JSON.stringify(journalMap));
 	}
@@ -219,13 +234,14 @@
 			>+</button
 		>
 		{#if selectedDate}
-			<DayModal 
-				{selectedDate} 
-				{selectedDateInfo} 
+			<DayModal
+				{selectedDate}
+				{selectedDateInfo}
 				on:close={closeModal}
 				on:propertySchemaChange={massPropertyUpdate}
 				on:massIconChange={massIconUpdate}
-				/>
+				on:addProperty={massAddProperty}
+			/>
 		{/if}
 	</div>
 </div>

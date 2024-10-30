@@ -13,5 +13,5 @@ export function findKeysWithIcon(obj) {
 }
 
 export function findObjectIndexByValue(array, key, value) {
-    return array.findIndex(obj => obj[key] === value);
+	return array.findIndex((obj) => obj[key] === value);
 }

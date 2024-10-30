@@ -1,11 +1,13 @@
 <script>
-    import { createEventDispatcher } from 'svelte';
+	import { createEventDispatcher } from 'svelte';
 	let showMenu = false;
+
+	const dispatch = createEventDispatcher();
 
 	// Function to handle menu option click
 	function handleOption(option) {
 		showMenu = false; // Close the menu after selecting an option
-		console.log('Selected option:', option);
+		dispatch('optionChosen', option);
 	}
 
 	// Function to toggle the menu
@@ -31,8 +33,8 @@
 	>
 	{#if showMenu}
 		<div class="context-menu show">
-			<div class="context-menu-item" on:click={() => handleOption('Number')}>Number</div>
-			<div class="context-menu-item" on:click={() => handleOption('Checkbox')}>Checkbox</div>
+			<div class="context-menu-item" on:click={() => handleOption('text')}>Text</div>
+			<div class="context-menu-item" on:click={() => handleOption('checkbox')}>Checkbox</div>
 		</div>
 	{/if}
 </div>

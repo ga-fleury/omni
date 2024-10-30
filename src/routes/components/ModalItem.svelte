@@ -1,12 +1,12 @@
 <script>
 	export let info;
-    import { createEventDispatcher } from "svelte";
-    import IconPicker from "./IconPicker.svelte";
+	import { createEventDispatcher } from 'svelte';
+	import IconPicker from './IconPicker.svelte';
 
-    // TODO - add propertyname check to see if there is another property with the same name
-    // or check property index inside array, and change logic for looking for property from id name to 
+	// TODO - add propertyname check to see if there is another property with the same name
+	// or check property index inside array, and change logic for looking for property from id name to
 
-    const dispatch = createEventDispatcher();
+	const dispatch = createEventDispatcher();
 
 	function materialIcon(type) {
 		if (type === 'text') {
@@ -17,29 +17,35 @@
 		}
 	}
 
-    function handlePropertyChange(event) {
-        const changedProperty = event.srcElement.getAttribute('data-property-name')
-        const newPropertyValue = event.srcElement.innerText
-        console.log(changedProperty)
-        dispatch('propertyChange', { info, changedProperty, newPropertyValue });
-    }
+	function handlePropertyChange(event) {
+		const changedProperty = event.srcElement.getAttribute('data-property-name');
+		const newPropertyValue = event.srcElement.innerText;
+		dispatch('propertyChange', { info, changedProperty, newPropertyValue });
+	}
 
-    function handleIconChange(event) {
-        const newIcon = event.detail
-        info.icon.name = newIcon;
-        console.log(newIcon)
-        dispatch('iconChange', {id: info.id, iconName: newIcon}) 
-    }
+	function handleIconChange(event) {
+		const newIcon = event.detail;
+		info.icon.name = newIcon;
+		dispatch('iconChange', { id: info.id, iconName: newIcon });
+	}
 
-    function parameterClick(event) {
-        if(event.srcElement.childNodes[0].attributes[0].nodeValue == "checkbox") {
-            console.log('check')
-            info.boolean = !event.srcElement.childNodes[0].checked
-        }
-        console.log('click')
-        console.log(event)
-    }
+	function parameterClick(event) {
+		// if clicked on checkbox itself, take checkbox value
+		if (event.target.nodeName === 'INPUT') {
+			info.boolean = event.target.checked;
+		}
+		// if clicked on parent of checkbox, flip the value of the checkbox to the inverse of what it is
+		else if (event.srcElement.childNodes[0].attributes[0].nodeValue == 'checkbox') {
+			info.boolean = !event.srcElement.childNodes[0].checked;
+		}
 
+        dispatch('checkClick', info)
+	}
+
+	function nameWrapClick(event) {
+		console.log(event);
+		event.srcElement.childNodes[0].focus();
+	}
 </script>
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -49,54 +55,65 @@
 <div class="param-wrap">
 	<div class="param-left">
 		<span class="material-symbols-outlined">
-            {#if info.boolean === true || info.boolean === false}
-                <IconPicker 
-                    selectedIcon={info.icon.name}
-                    on:handleIconChange={handleIconChange}
-                />
-            {:else}
-			{materialIcon(info.type)}
-            {/if}
+			{#if info.boolean === true || info.boolean === false}
+				<IconPicker selectedIcon={info.icon.name} on:handleIconChange={handleIconChange} />
+			{:else}
+				{materialIcon(info.type)}
+			{/if}
 		</span>
-        <span
+		<div class="param-name-wrap" on:click={nameWrapClick}>
+			<span
 				type="text"
 				name=""
-				class=""
-                data-property-name={info.id}
+				class="param-name-wrap__span"
+				data-property-name={info.id}
 				placeholder="property"
 				on:input={handlePropertyChange}
-				contenteditable
-			>{info.id}</span>
+				contenteditable>{info.id}</span
+			>
+		</div>
 	</div>
 	<div class="param-right" on:click={parameterClick}>
-        {#if info.boolean === true || info.boolean === false}
-            
-        <input type="checkbox" bind:checked={info.boolean} />
-        {:else}
-        <span contenteditable>{info.value}</span>
-        {/if}
-    </div>
+		{#if info.boolean === true || info.boolean === false}
+			<input type="checkbox" bind:checked={info.boolean} />
+		{:else}
+			<span contenteditable>{info.value}</span>
+		{/if}
+	</div>
 </div>
 
 <style lang="scss">
-    .param{
-        &-wrap {
-            display: flex;
-            margin: 5px 0px;
-            align-items: center;
-        }
-        &-left {
-            display: flex;
-            align-items: center;
-            min-width: 150px;
-            gap: 6px;
-        }
-        &-right {
-            width: 100%;
-            &:hover {
-                background-color: #c2c3c7;
-                cursor: pointer;
-            }
-        }
-    }
+	.param-name-wrap {
+		width: 100%;
+		height: 100%;
+		padding: 5px 2px;
+		&:hover {
+			background-color: #c2c3c7;
+			cursor: pointer;
+		}
+		&__span:focus {
+			border: none;
+			outline: none;
+		}
+	}
+	.param {
+		&-wrap {
+			display: flex;
+			margin: 5px 0px;
+			align-items: center;
+		}
+		&-left {
+			display: flex;
+			align-items: center;
+			min-width: 150px;
+			gap: 6px;
+		}
+		&-right {
+			width: 100%;
+			&:hover {
+				background-color: #c2c3c7;
+				cursor: pointer;
+			}
+		}
+	}
 </style>

@@ -28,7 +28,9 @@
 	// TODO - better layout for items, see obsidian/notion for reference
 	// TODO - modular item creation inside of the modal
 	// TODO - handle icon/property name changes using only one function
-	// TODO - handle multiple changes per modal close (currently only one) 
+	// TODO - handle multiple changes per modal close (currently only one)
+	// TODO - add addproperty functionality
+	// TODO - make addproperty propagate to other days
 
 	function handleInputChange() {
 		const textarea = document.querySelector('#day-title-input');
@@ -37,13 +39,14 @@
 		selectedDateInfo.title = textarea.textContent;
 	}
 
-	function closeModal(...args) {
+	function closeModal() {
 		dispatch('close', { selectedDateInfo, day: selectedDate, date });
-		if(massPropertyUpdate) {
+		console.log('close', { selectedDateInfo, day: selectedDate, date })
+		if (massPropertyUpdate) {
 			dispatch('propertySchemaChange', { changedProperty, newPropertyValue, objectIndex });
 			massPropertyUpdate = false;
 		}
-		if(massIconUpdate) {
+		if (massIconUpdate) {
 			dispatch('massIconChange', { newIconName, iconIndex });
 			massIconUpdate = false;
 		}
@@ -92,31 +95,62 @@
 		}
 	}
 
-	
-
 	function propertyChange(event) {
-		changedProperty = event.detail.changedProperty
-		newPropertyValue = event.detail.newPropertyValue
-		const index = findObjectIndexByValue(selectedDateInfo.properties, 'id', changedProperty)
+		changedProperty = event.detail.changedProperty;
+		newPropertyValue = event.detail.newPropertyValue;
+		const index = findObjectIndexByValue(selectedDateInfo.properties, 'id', changedProperty);
 		objectIndex = index;
-		console.log('day modal', selectedDateInfo.properties[index].id)
-		massPropertyUpdate = true
+		console.log('day modal', selectedDateInfo.properties[index].id);
+		massPropertyUpdate = true;
 	}
 
 	function iconChange(event) {
-		const index = findObjectIndexByValue(selectedDateInfo.properties, 'id', event.detail.id)
-		iconIndex = index
-		newIconName = event.detail.iconName
-		massIconUpdate = true
-		console.log(iconIndex, newIconName)
+		const index = findObjectIndexByValue(selectedDateInfo.properties, 'id', event.detail.id);
+		iconIndex = index;
+		newIconName = event.detail.iconName;
+		massIconUpdate = true;
+		console.log(iconIndex, newIconName);
 	}
 
-	// console.log('dayModal', selectedDate);
+	// FIXME - new options added are not responding individually, they get updated globally
 
-	const booleanKeys = findKeysWithBoolean(selectedDateInfo.properties);
+	function addOption(event) {
+		console.log(selectedDateInfo);
+		if (event.detail === 'text') {
+			const newProperty = {
+				id: 'newProperty',
+				type: 'text',
+				value: ''
+			};
+			dispatch('addProperty', newProperty);
+		} else if (event.detail === 'checkbox') {
+			const newProperty = {
+				id: 'newProperty',
+				type: 'check',
+				boolean: false,
+				icon: {
+					enabled: true,
+					name: 'favorite',
+					position: 'icon3',
+					color: ''
+				}
+			};
+			dispatch('addProperty', newProperty);
+		}
+
+		params = Object.keys(selectedDateInfo.properties);
+		console.log(params);
+	}
+
+	function checkboxClick(event) {
+		const index = findObjectIndexByValue(selectedDateInfo.properties, 'id', event.detail.id);
+		selectedDateInfo.properties[index] = event.detail;
+		params = Object.keys(selectedDateInfo.properties);
+	}
+
 
 	const dispatch = createEventDispatcher();
-	const params = Object.keys(selectedDateInfo.properties);
+	let params = Object.keys(selectedDateInfo.properties);
 
 	// console.log(JSON.stringify(selectedDateInfo));
 </script>
@@ -144,15 +178,16 @@
 		</div>
 		<div>
 			{#each params as param}
-				<ModalItem 
-					info={selectedDateInfo.properties[param]} 
+				<ModalItem
+					info={selectedDateInfo.properties[param]}
 					on:propertyChange={propertyChange}
 					on:iconChange={iconChange}
+					on:checkClick={checkboxClick}
 					{changedProperty}
 					{newPropertyValue}
-					/>
+				/>
 			{/each}
-			<AddPropertyContext  />
+			<AddPropertyContext on:optionChosen={addOption} />
 		</div>
 		<button on:click={closeModal}>Close</button>
 	</div>
@@ -162,7 +197,7 @@
 	:root {
 		--title-margin: 20px;
 	}
-	
+
 	.day-title-input {
 		border: none;
 		border-bottom: 1px solid white;

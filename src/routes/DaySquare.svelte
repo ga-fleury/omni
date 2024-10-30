@@ -1,7 +1,7 @@
 <script>
 	import { createEventDispatcher } from 'svelte';
 	import { findKeysWithIcon } from '../utils/utils';
-	import StarIcon from '../lib/images/StarIcon.svelte';
+	import { afterUpdate } from 'svelte';
 
 	export let title;
 	export let date;
@@ -28,7 +28,7 @@
 
 	const dispatch = createEventDispatcher();
 
-	const booleanKeys = findKeysWithIcon(details.properties);
+	let booleanKeys = findKeysWithIcon(details.properties);
 	// console.log(details);
 	// console.log(booleanKeys);
 
@@ -36,6 +36,10 @@
 		// console.log('component says clicked ' + day);
 		dispatch('squareClicked', { title, day, date });
 	}
+
+	afterUpdate(() => {
+		booleanKeys = findKeysWithIcon(details.properties);
+	});
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->

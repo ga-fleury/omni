@@ -11,7 +11,9 @@
 	</main>
 
 	<footer>
-		<p>made and continuously updated by <a href="https://www.gabrielfleury.design">Gabriel Fleury</a></p>
+		<p>
+			made and continuously updated by <a href="https://www.gabrielfleury.design">Gabriel Fleury</a>
+		</p>
 	</footer>
 </div>
 
