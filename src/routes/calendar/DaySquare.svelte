@@ -1,6 +1,6 @@
 <script>
 	import { createEventDispatcher } from 'svelte';
-	import { findKeysWithIcon } from '../utils/utils';
+	import { findKeysWithIcon } from '../../utils/utils';
 	import { afterUpdate } from 'svelte';
 
 	export let title;

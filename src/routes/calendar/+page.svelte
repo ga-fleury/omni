@@ -1,5 +1,5 @@
 <script>
-	import CurrentMonthSquares from '../CurrentMonthSquares.svelte';
+	import CurrentMonthSquares from './CurrentMonthSquares.svelte';
 
 	// TODO - add simple filters
 	// TODO - add a way to mass toggle events without having to open modal

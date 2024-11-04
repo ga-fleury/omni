@@ -11,12 +11,12 @@
 	let newIconName;
 
 	import { createEventDispatcher } from 'svelte';
-	import { findKeysWithBoolean, findObjectIndexByValue } from '../utils/utils';
+	import { findKeysWithBoolean, findObjectIndexByValue } from '../../utils/utils';
 	import dayjs from 'dayjs';
 	import LocalizedFormat from 'dayjs/plugin/localizedFormat';
 	import 'dayjs/locale/en';
-	import ModalItem from './components/ModalItem.svelte';
-	import AddPropertyContext from './components/AddPropertyContext.svelte';
+	import ModalItem from '$lib/components/ModalItem.svelte';
+	import AddPropertyContext from '$lib/components/AddPropertyContext.svelte';
 
 	// Extend Day.js with the localized format plugin
 	dayjs.extend(LocalizedFormat);

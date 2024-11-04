@@ -133,6 +133,15 @@
 						value: ''
 					},
 					{
+						id: 'water_intake',
+						type: 'number',
+						value: '',
+						unit: {
+							name: 'mililiters',
+							abbreviation: 'ml'
+						}
+					},
+					{
 						id: 'meditated',
 						type: 'check',
 						boolean: false,

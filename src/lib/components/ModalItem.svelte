@@ -15,6 +15,9 @@
 		if (type === 'check') {
 			return 'check_box';
 		}
+        if (type === 'number') {
+            return 'tag'
+        }
 	}
 
 	function handlePropertyChange(event) {
@@ -30,16 +33,18 @@
 	}
 
 	function parameterClick(event) {
+        console.log('parameter click event', event)
 		// if clicked on checkbox itself, take checkbox value
-		if (event.target.nodeName === 'INPUT') {
+		if (event.target.nodeName === 'INPUT' && event.target.type != 'number') {
 			info.boolean = event.target.checked;
+            dispatch('checkClick', info)
 		}
 		// if clicked on parent of checkbox, flip the value of the checkbox to the inverse of what it is
 		else if (event.srcElement.childNodes[0].attributes[0].nodeValue == 'checkbox') {
 			info.boolean = !event.srcElement.childNodes[0].checked;
+            dispatch('checkClick', info)
 		}
 
-        dispatch('checkClick', info)
 	}
 
 	function nameWrapClick(event) {
@@ -76,6 +81,9 @@
 	<div class="param-right" on:click={parameterClick}>
 		{#if info.boolean === true || info.boolean === false}
 			<input type="checkbox" bind:checked={info.boolean} />
+        {:else if info.type === 'number'}
+            <input type="number" placeholder="0" />
+            <span>{info.unit.abbreviation}</span>
 		{:else}
 			<span contenteditable>{info.value}</span>
 		{/if}
